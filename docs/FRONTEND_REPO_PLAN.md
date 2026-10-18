@@ -112,7 +112,7 @@ CI có bước `gen-check`: sinh lại `schema.d.ts` từ `contract/openapi.yaml
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | FE-00 | Tạo repo, `master`, Vite + TS strict + Tailwind + ESLint/Prettier, pin version                                                               |                                      |
 | FE-01 | CI: lint, typecheck, Vitest, build                                                                                                           |                                      |
-| FE-02 | `.claude/` (workflow, guard-push, hook prettier), `CLAUDE.md`, `AGENTS.md`, template PR                                                      |                                      |
+| FE-02 | `.claude/` (workflow, guard-push, hook prettier, workflow persona aarch/aeng/asec), `CLAUDE.md`, `AGENTS.md`, template PR                    |                                      |
 | FE-03 | `make sync-contract`, sinh `schema.d.ts`, `gen-check` trong CI, client `openapi-fetch` có middleware auth và xử lý envelope lỗi              | openapi.yaml tồn tại (đề xuất mục 4) |
 | FE-04 | Image Caddy tĩnh với CSP và cache, thêm job docker build vào CI; service `web` và route trong Caddyfile của backend (issue PHA phía backend) |                                      |
 
