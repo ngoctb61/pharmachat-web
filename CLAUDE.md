@@ -22,6 +22,8 @@ npx vitest run src/App.test.tsx  # one file; add -t "<name>" for one test
 npm run build
 ```
 
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, test and build as separate jobs on the Node version in `.nvmrc`.
+
 ## Rules
 
 - Dependencies are pinned to exact versions (`.npmrc` sets `save-exact`). Pick versions released at least two weeks ago. TypeScript stays on 6.0.x until `typescript-eslint` supports 7.
