@@ -30,4 +30,24 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, test and build as separate
 - API types and the client will be generated from `contract/openapi.yaml`, a pinned copy of the backend's `api/openapi.yaml` (FE-03). Never hand-write request or response types.
 - The access token lives in memory only, never in `localStorage`; the refresh token is an httpOnly cookie set by the backend. WebSocket auth uses a one-time ticket from `POST /api/ws/ticket` (F-5).
 - Never log or persist phone numbers, emails, message content or tokens on the client.
-- Never push to `master` or force-push; open a PR from `feat/PHA-n-<scope>`, `fix/PHA-n-<scope>` or `chore/<scope>`. The repo is public; branch protection on `master` requires a PR and blocks force-pushes.
+- Never push to `master` or force-push; open a PR from `feat/PHA-n-<scope>`, `fix/PHA-n-<scope>` or `chore/PHA-n-<scope>`. The repo is public; branch protection on `master` requires a PR, the four CI checks and an up-to-date branch, and blocks force-pushes.
+
+## Shared Claude Code setup (`.claude/`)
+
+- `rules/workflow.md` always applies: Jira issue per change, backend dependencies, API contract, branches, commits, secrets.
+- `skills/`: `/start-task PHA-n` (or `FE-xx`), `/review-task`, `/fix-review`.
+- `agents/`: three personas. `aarch` (software architect) writes the plan; `aeng` (principal engineer) is the role the main session takes to implement; `asec` (security engineer). All three review as read-only subagents.
+- `settings.json`: allowlists routine npm/git/gh commands and denies reading `.env` files. Hooks run prettier after edits (`hooks/prettier.sh`, a no-op until `npm ci`), block force-pushes and pushes to `master` (`hooks/guard-push.sh`), and gate code edits on plan approval (below).
+- Personal overrides go in `.claude/settings.local.json` (gitignored). `.mcp.json` registers the Atlassian MCP server for Jira and Confluence; each person signs in once with `/mcp`.
+
+### Task flow
+
+Each task runs in its own git worktree `.claude/worktrees/PHA-n` (gitignored) on branch `feat/PHA-n-<scope>`, with its own `npm ci`. Its working docs go in `ticketed/PHA-n/` and are committed with the branch: `plan.md`, optional `decision-NN-<slug>.md`, `summary.md`, `review-<YYYYMMDD-HHMM>.md`.
+
+1. `/start-task PHA-n`: creates the worktree, `aarch` writes `plan.md`, the session stops.
+2. The user types `approve`. `hooks/plan-approve.sh` writes `ticketed/PHA-n/.approved` (the plan's SHA-256). `hooks/plan-gate.sh` blocks Write/Edit of files outside `ticketed/` in that worktree until then, and again if the plan changes after approval.
+3. The session implements as `aeng`, writes `summary.md` and points the user to review.
+4. `/review-task`, in the same session or (to keep the implementation context out of it) a new one opened in the worktree: `aarch`, `aeng` and `asec` review the diff in parallel; findings are verified, graded Blocker / Major / Minor / Nit / Question and written to `review-*.md` with a decision box each.
+5. The user marks decisions; `/fix-review` in the implement session fixes the ones marked "sửa" and appends to `summary.md`.
+
+A task blocked by an unfinished `GO-xx` issue is built against MSW mocks first and only moves to Done after it has run against the real backend.

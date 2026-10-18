@@ -1,0 +1,11 @@
+# Quy trình làm việc
+
+- **Mỗi thay đổi gắn với một issue Jira** `PHA-n` trong project PHA (https://pharmachat.atlassian.net). Frontend có 6 epic F0..F5 (PHA-64..PHA-69); issue con có tiền tố `FE-xx · ` trong tiêu đề, tra theo mã bằng JQL `project = PHA AND summary ~ "FE-05"`. Đọc mô tả issue, điều kiện xong trong epic cha, các link "is blocked by" sang issue `GO-xx` của backend và SPEC liên quan trên Confluence (space SD, trang "PharmaChat — Tài liệu dự án") trước khi code. Dùng MCP `atlassian` để đọc và chuyển trạng thái issue.
+- **Quy trình task**: bắt đầu bằng `/start-task PHA-n`. Mỗi task có worktree riêng `.claude/worktrees/PHA-n` và thư mục `ticketed/PHA-n/` (plan, quyết định, tóm tắt, review) commit cùng nhánh. Chỉ code sau khi người dùng gõ `approve` cho plan; review bằng `/review-task` (session mới nếu muốn review không bị ảnh hưởng bởi context lúc implement), sửa bằng `/fix-review`.
+- **Phụ thuộc backend**: task có link "is blocked by" sang issue GO chưa xong vẫn làm trước được bằng mock MSW, nhưng chỉ chuyển sang Done khi đã chạy với backend thật.
+- **Hợp đồng API**: kiểu dữ liệu và client sinh từ `contract/openapi.yaml` (bản copy ghim của `api/openapi.yaml` bên backend, cập nhật bằng `make sync-contract`). Không viết tay kiểu request/response. Spec thiếu hoặc sai thì báo để sửa ở backend, không vá ở frontend.
+- **Phạm vi**: chỉ làm đúng task. Lỗi phát hiện ngoài phạm vi thì ghi lại và báo, không tự sửa lẫn vào.
+- **Nhánh**: tách từ `master`, đặt tên `feat/PHA-n-<scope>`, `fix/PHA-n-<scope>`, `chore/PHA-n-<scope>`; có key `PHA-n` để Jira tự liên kết nhánh. Không push thẳng lên `master`, không force-push. Branch protection trên GitHub đã chặn, hook `.claude/hooks/guard-push.sh` chặn sớm cho các phiên Claude.
+- **Commit** theo conventional commits `<type>(<scope>): <tóm tắt> (PHA-n)`, phần thân giải thích tại sao. Ghi key `PHA-n` và SPEC trong PR.
+- **Quyết định đã chốt**: B-1..B-6 (trang Confluence "Kế hoạch migrate backend PharmaChat sang Go" mục 1) và F-1..F-5 (`docs/FRONTEND_REPO_PLAN.md` mục 9); không mở lại. Khi SPEC, kế hoạch và code mâu thuẫn, hỏi lại thay vì tự chọn.
+- **Bí mật**: repo này public. Không đọc, in ra hay commit `.env`. Biến `VITE_*` bị đóng gói vào bundle công khai nên không bao giờ chứa bí mật.
